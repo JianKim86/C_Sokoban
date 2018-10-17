@@ -1,0 +1,229 @@
+#include <stdio.h>
+#include <conio.h>
+#include <Windows.h>
+
+//for control
+#define DOWN 72
+#define UP 80
+#define RIGHT 77
+#define LEFT 75
+
+//for map
+#define MAXSTAGE 3
+#define EMPTY 0
+#define WALL 1
+#define BOX 2
+#define ARRAY 3
+#define USER 4
+#define BALL 5
+#define GOAL 6
+
+//for restart
+#define r 114 
+
+void beforCheck(); //get defult data
+void display(); //print map
+void usermove(); //put in N move 
+int check(); //finish
+void stayGoal(); //stay Goal data
+void quGoto();//go to the next stage
+
+char MapAll[MAXSTAGE][11][20] =
+{
+	{
+	   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+	   {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+	   {1,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,1},
+	   {1,0,2,3,3,3,4,3,3,3,3,3,3,3,3,3,3,2,0,1},
+	   {1,0,2,3,3,3,5,3,3,3,6,6,3,3,3,3,3,2,0,1},
+	   {1,0,2,3,3,5,3,3,3,3,6,6,3,3,3,3,3,2,0,1},
+	   {1,0,2,3,3,3,5,3,3,5,3,3,3,3,3,3,3,2,0,1},
+	   {1,0,2,3,3,3,3,2,3,3,2,2,3,3,3,3,3,2,0,1},
+	   {1,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,1},
+	   {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+	   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+	},
+	{
+	   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+	   {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+	   {1,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0,0,0,1},
+	   {1,0,0,0,0,2,4,3,3,3,2,0,0,0,0,0,0,0,0,1},
+	   {1,0,2,2,2,2,5,3,3,5,2,2,2,2,2,0,0,0,0,1},
+	   {1,0,2,3,3,5,3,3,3,3,3,3,3,3,2,2,2,2,0,1},
+	   {1,0,2,3,3,3,3,3,3,5,3,3,3,3,3,6,6,2,0,1},
+	   {1,0,2,3,3,3,3,2,3,3,2,2,3,3,3,6,6,2,0,1},
+	   {1,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,1},
+	   {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+	   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+	},
+	{
+	   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+	   {1,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,1},
+	   {1,0,0,0,2,3,3,2,0,0,0,0,0,0,0,2,2,2,0,1},
+	   {1,0,0,2,2,3,5,2,2,2,2,2,2,0,0,2,6,2,0,1},
+	   {1,0,0,2,4,3,3,3,3,3,3,3,2,2,2,2,3,2,0,1},
+	   {1,0,2,2,3,5,3,3,2,3,2,3,2,6,3,3,3,2,0,1},
+	   {1,0,2,3,5,3,3,3,3,3,3,3,3,5,3,3,3,2,0,1},
+	   {1,0,2,3,2,3,3,2,3,3,2,3,2,2,2,3,6,2,0,1},
+	   {1,0,2,3,3,3,3,2,6,3,3,3,2,0,2,2,2,2,0,1},
+	   {1,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,1},
+	   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+	}
+};
+
+int stageCheck;
+char Map[11][20];
+int cBall[8];
+char cUser[2];
+int cGoal[8];
+int restrart;
+int Ypos;
+int Xpos;
+
+void main()
+{
+	stageCheck = 0; //stage 
+	while(stageCheck < MAXSTAGE){
+		restrart = 0;
+		memcpy(Map, MapAll[stageCheck], sizeof(Map)); //copy from alMap to Map
+		beforCheck();// copy position USER, BALL, GOAL
+		while (1)
+		{
+			system("cls");
+			stayGoal(); // stay goal
+			display(); //print map
+			if (check()) //check finish
+			{
+				printf(" -- clear -- \n");
+				if(stageCheck < MAXSTAGE-1) quGoto();//go to the next stage
+				stageCheck++; break;
+			}
+			if (restrart == 1) break; 
+			usermove(); //put in N move
+		}	
+	}
+	printf("thank you");
+}
+void quGoto()//go to the next stage
+{
+	char yn;
+	while(1)
+	{
+		printf("다음 스테이지로 넘어가시겠습니까?(y,n)");
+		rewind(stdin);
+		scanf("%c", &yn);
+		if (yn == 'y' || yn == 'Y') return; 
+		else if (yn == 'n' || yn == 'N') { stageCheck = MAXSTAGE; return; }
+		
+	}
+}
+
+void beforCheck() //get defult data
+{
+	int b = 0, u = 0, g = 0;
+	for (int y = 0; y < 11; y++)
+		for (int x = 0; x < 20; x++)
+		{
+			if (Map[y][x] == BALL) { cBall[b] = y; cBall[b + 1] = x; b += 2; }
+			if (Map[y][x] == USER) { cUser[u] = y; Ypos = y; cUser[u + 1] = x; Xpos = x;  u += 2; }
+			if (Map[y][x] == GOAL) { cGoal[g] = y; cGoal[g + 1] = x; g += 2; }
+		}
+}
+int check() //finish
+{
+	int b = 0;
+	int x, y;
+	for (int i = 0; i < 8; i += 2)
+	{
+		y = cGoal[i];
+		x = cGoal[i + 1];
+		if (Map[y][x] == BALL) b++;
+	}
+	if (b == sizeof(cGoal) / sizeof(int) / 2) return 1;
+	else return 0;
+}
+void stayGoal() //stay goal
+{
+	int x, y;
+	for (int i = 0; i < 8; i += 2)
+	{
+		y = cGoal[i];
+		x = cGoal[i + 1];
+		if(Map[y][x]==ARRAY) Map[y][x] = GOAL;
+	}
+}
+void usermove() //put in N move 
+{
+	//user position
+	int key;
+	key = getch();
+	if (key == r) { //restart	
+		getch();
+		restrart = 1; return;
+	}
+		key = getch();
+		switch (key)
+		{
+		case LEFT:
+			//lock (옆이 내부박스인 경우 || 공이있고 공옆이 벽인경우 || 공이 붙은 경우)
+			if ((Map[Ypos][Xpos - 1] == BOX) || (Map[Ypos][Xpos - 1] == BALL &&
+				Map[Ypos][Xpos - 2] == BOX) || (Map[Ypos][Xpos - 1] == BALL &&
+					Map[Ypos][Xpos - 2] == BALL)) return;
+			if (Map[Ypos][Xpos - 1] == BALL) Map[Ypos][Xpos - 2] = BALL; // have BALL
+			Map[Ypos][Xpos] = ARRAY; Xpos--;
+			Map[Ypos][Xpos] = USER; break;
+
+		case RIGHT:
+			if ((Map[Ypos][Xpos + 1] == BOX) || (Map[Ypos][Xpos + 1] == BALL &&
+				Map[Ypos][Xpos + 2] == BOX) || (Map[Ypos][Xpos + 1] == BALL &&
+					Map[Ypos][Xpos + 2] == BALL)) return;
+			if (Map[Ypos][Xpos + 1] == BALL) Map[Ypos][Xpos + 2] = BALL;
+			Map[Ypos][Xpos] = ARRAY; Xpos++;
+			Map[Ypos][Xpos] = USER; break;
+		case DOWN:
+			if ((Map[Ypos - 1][Xpos] == BOX) || (Map[Ypos - 1][Xpos] == BALL &&
+				Map[Ypos - 2][Xpos] == BOX) || (Map[Ypos - 1][Xpos] == BALL &&
+					Map[Ypos - 2][Xpos] == BALL)) return;
+			if (Map[Ypos - 1][Xpos] == BALL) Map[Ypos - 2][Xpos] = BALL;
+			Map[Ypos][Xpos] = ARRAY; Ypos--;
+			Map[Ypos][Xpos] = USER; break;
+
+		case UP:
+			if ((Map[Ypos + 1][Xpos] == BOX) || (Map[Ypos + 1][Xpos] == BALL &&
+				Map[Ypos + 2][Xpos] == BOX) || (Map[Ypos + 1][Xpos] == BALL &&
+					Map[Ypos + 2][Xpos] == BALL)) return;
+			if (Map[Ypos + 1][Xpos] == BALL) Map[Ypos + 2][Xpos] = BALL;
+			Map[Ypos][Xpos] = ARRAY; Ypos++;
+			Map[Ypos][Xpos] = USER; break;
+		}
+		Sleep(50);	
+}
+void display()// print base map
+{
+	printf("\n [ %d ] STAGE\t\t   다시시작 : r \n", stageCheck + 1);
+	for (int y = 0; y < 11; y++)
+	{
+		for (int x = 0; x < 20; x++)
+		{
+			switch (Map[y][x])
+			{
+			case EMPTY:
+				printf("  "); break;
+			case WALL:
+				printf("□"); break;
+			case USER:
+				printf("→"); break;
+			case BOX:
+				printf("▦"); break;
+			case ARRAY:
+				printf("·"); break;
+			case BALL:
+				printf("●"); break;
+			case GOAL:
+				printf("⊙"); break;
+			}
+		}
+		printf("\n");
+	}
+
+}
